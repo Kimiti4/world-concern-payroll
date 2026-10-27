@@ -1,0 +1,285 @@
+{
+  "specification_version": "draft-0.1",
+  "currency": "KES",
+  "notice": "All values are synthetic arithmetic fixtures. They are not statutory rates, advice, or buyer-approved payroll rules.",
+  "valid_cases": [
+    {
+      "id": "basic-salary-allowance-arrears",
+      "description": "Adds fixed salary, allowance, positive arrears, and explicit deductions.",
+      "input": {
+        "pay_period": {
+          "frequency": "monthly",
+          "start": "2026-09-01",
+          "end": "2026-09-30"
+        },
+        "earnings": [
+          {"id": "salary", "type": "salary", "amount": "75000.00"},
+          {"id": "transport", "type": "allowance", "amount": "5000.00"},
+          {"id": "arrears-sept", "type": "arrears", "amount": "2500.00"}
+        ],
+        "deductions": [
+          {"id": "loan-sept", "type": "loan", "tax_treatment": "post_tax", "amount": "5000.00"},
+          {"id": "voluntary-sept", "type": "voluntary", "tax_treatment": "post_tax", "amount": "2500.00"}
+        ]
+      },
+      "expected": {
+        "earning_lines": [
+          {"id": "salary", "amount": "75000.00"},
+          {"id": "transport", "amount": "5000.00"},
+          {"id": "arrears-sept", "amount": "2500.00"}
+        ],
+        "gross": "82500.00",
+        "deductions_total": "7500.00",
+        "net": "75000.00"
+      }
+    },
+    {
+      "id": "quantity-rate-and-synthetic-statutory-inputs",
+      "description": "Rounds an overtime line and subtracts externally supplied synthetic deductions without calculating statutory rules.",
+      "input": {
+        "pay_period": {
+          "frequency": "weekly",
+          "start": "2026-10-05",
+          "end": "2026-10-11"
+        },
+        "earnings": [
+          {"id": "weekly-salary", "type": "salary", "amount": "80000.00"},
+          {"id": "overtime", "type": "overtime", "quantity": "4.5", "unit_rate": "3200.00"},
+          {"id": "bonus", "type": "bonus", "amount": "7500.00"}
+        ],
+        "deductions": [
+          {"id": "synthetic-paye", "type": "tax", "tax_treatment": "externally_calculated_statutory", "amount": "12000.00"},
+          {"id": "synthetic-nssf", "type": "social-contribution", "tax_treatment": "externally_calculated_statutory", "amount": "6000.00"},
+          {"id": "synthetic-health", "type": "health-contribution", "tax_treatment": "externally_calculated_statutory", "amount": "1600.00"},
+          {"id": "synthetic-housing", "type": "housing-contribution", "tax_treatment": "externally_calculated_statutory", "amount": "1700.00"},
+          {"id": "loan", "type": "loan", "tax_treatment": "post_tax", "amount": "5000.00"}
+        ]
+      },
+      "expected": {
+        "earning_lines": [
+          {"id": "weekly-salary", "amount": "80000.00"},
+          {"id": "overtime", "amount": "14400.00"},
+          {"id": "bonus", "amount": "7500.00"}
+        ],
+        "gross": "101900.00",
+        "deductions_total": "26300.00",
+        "net": "75600.00"
+      }
+    },
+    {
+      "id": "half-up-line-rounding",
+      "description": "Rounds a calculated earning line once using decimal ROUND_HALF_UP before totaling.",
+      "input": {
+        "pay_period": {
+          "frequency": "biweekly",
+          "start": "2026-10-01",
+          "end": "2026-10-14"
+        },
+        "earnings": [
+          {"id": "salary", "type": "salary", "amount": "1200.00"},
+          {"id": "fractional-unit", "type": "approved-unit", "quantity": "0.1", "unit_rate": "333.33"}
+        ],
+        "deductions": [
+          {"id": "deduction-a", "type": "example", "tax_treatment": "pre_tax", "amount": "12.34"},
+          {"id": "deduction-b", "type": "example", "tax_treatment": "post_tax", "amount": "5.67"}
+        ]
+      },
+      "expected": {
+        "earning_lines": [
+          {"id": "salary", "amount": "1200.00"},
+          {"id": "fractional-unit", "amount": "33.33"}
+        ],
+        "gross": "1233.33",
+        "deductions_total": "18.01",
+        "net": "1215.32"
+      }
+    },
+    {
+      "id": "largest-remainder-cost-centre-allocation",
+      "description": "Allocates a synthetic KES 100.01 base using basis points and assigns the residual cent by largest remainder.",
+      "input": {
+        "pay_period": {
+          "frequency": "monthly",
+          "start": "2026-10-01",
+          "end": "2026-10-31"
+        },
+        "earnings": [
+          {"id": "salary", "type": "salary", "amount": "100.01"}
+        ],
+        "deductions": [],
+        "allocation": {
+          "allocation_base": "100.01",
+          "allocations": [
+            {"cost_centre_id": "CC-B", "basis_points": 6667},
+            {"cost_centre_id": "CC-A", "basis_points": 3333}
+          ]
+        }
+      },
+      "expected": {
+        "earning_lines": [
+          {"id": "salary", "amount": "100.01"}
+        ],
+        "gross": "100.01",
+        "deductions_total": "0.00",
+        "net": "100.01",
+        "cost_centre_allocations": [
+          {"cost_centre_id": "CC-A", "amount": "33.33"},
+          {"cost_centre_id": "CC-B", "amount": "66.68"}
+        ]
+      }
+    },
+    {
+      "id": "allocation-equal-remainder-tie-break",
+      "description": "Resolves equal fractional-cent remainders by ascending cost-centre ID.",
+      "input": {
+        "pay_period": {
+          "frequency": "weekly",
+          "start": "2026-10-12",
+          "end": "2026-10-18"
+        },
+        "earnings": [
+          {"id": "small-salary", "type": "salary", "amount": "0.03"}
+        ],
+        "deductions": [],
+        "allocation": {
+          "allocation_base": "0.03",
+          "allocations": [
+            {"cost_centre_id": "CC-B", "basis_points": 5000},
+            {"cost_centre_id": "CC-A", "basis_points": 5000}
+          ]
+        }
+      },
+      "expected": {
+        "earning_lines": [
+          {"id": "small-salary", "amount": "0.03"}
+        ],
+        "gross": "0.03",
+        "deductions_total": "0.00",
+        "net": "0.03",
+        "cost_centre_allocations": [
+          {"cost_centre_id": "CC-A", "amount": "0.02"},
+          {"cost_centre_id": "CC-B", "amount": "0.01"}
+        ]
+      }
+    }
+  ],
+  "invalid_cases": [
+    {
+      "id": "money-with-three-decimals",
+      "description": "Reject monetary input with more than two fractional digits.",
+      "error": "INVALID_MONEY",
+      "input": {
+        "pay_period": {"frequency": "monthly", "start": "2026-10-01", "end": "2026-10-31"},
+        "earnings": [{"id": "salary", "type": "salary", "amount": "10.001"}],
+        "deductions": []
+      }
+    },
+    {
+      "id": "duplicate-earning-id",
+      "description": "Reject duplicated earning identifiers.",
+      "error": "DUPLICATE_LINE_ID",
+      "input": {
+        "pay_period": {"frequency": "monthly", "start": "2026-10-01", "end": "2026-10-31"},
+        "earnings": [
+          {"id": "duplicate", "type": "salary", "amount": "100.00"},
+          {"id": "duplicate", "type": "allowance", "amount": "10.00"}
+        ],
+        "deductions": []
+      }
+    },
+    {
+      "id": "deductions-exceed-gross",
+      "description": "Reject rather than cap deductions or emit a negative net amount.",
+      "error": "DEDUCTIONS_EXCEED_GROSS",
+      "input": {
+        "pay_period": {"frequency": "monthly", "start": "2026-10-01", "end": "2026-10-31"},
+        "earnings": [{"id": "salary", "type": "salary", "amount": "100.00"}],
+        "deductions": [
+          {"id": "loan", "type": "loan", "tax_treatment": "post_tax", "amount": "101.00"}
+        ]
+      }
+    },
+    {
+      "id": "allocation-does-not-total-one-hundred-percent",
+      "description": "Reject allocation weights that do not equal 10000 basis points.",
+      "error": "INVALID_ALLOCATION",
+      "input": {
+        "pay_period": {"frequency": "monthly", "start": "2026-10-01", "end": "2026-10-31"},
+        "earnings": [{"id": "salary", "type": "salary", "amount": "100.00"}],
+        "deductions": [],
+        "allocation": {
+          "allocation_base": "100.00",
+          "allocations": [
+            {"cost_centre_id": "CC-A", "basis_points": 6000},
+            {"cost_centre_id": "CC-B", "basis_points": 3999}
+          ]
+        }
+      }
+    },
+    {
+      "id": "negative-earning",
+      "description": "Reject a negative earning rather than treating it as an implicit reversal.",
+      "error": "INVALID_MONEY",
+      "input": {
+        "pay_period": {"frequency": "monthly", "start": "2026-10-01", "end": "2026-10-31"},
+        "earnings": [{"id": "reversal", "type": "salary", "amount": "-1.00"}],
+        "deductions": []
+      }
+    },
+    {
+      "id": "quantity-with-too-many-decimals",
+      "description": "Reject a quantity with more than four fractional digits.",
+      "error": "INVALID_QUANTITY",
+      "input": {
+        "pay_period": {"frequency": "monthly", "start": "2026-10-01", "end": "2026-10-31"},
+        "earnings": [{"id": "hours", "type": "overtime", "quantity": "1.00001", "unit_rate": "10.00"}],
+        "deductions": []
+      }
+    },
+    {
+      "id": "duplicate-deduction-id",
+      "description": "Reject duplicated deduction identifiers.",
+      "error": "DUPLICATE_LINE_ID",
+      "input": {
+        "pay_period": {"frequency": "monthly", "start": "2026-10-01", "end": "2026-10-31"},
+        "earnings": [{"id": "salary", "type": "salary", "amount": "100.00"}],
+        "deductions": [
+          {"id": "duplicate", "type": "example", "tax_treatment": "post_tax", "amount": "10.00"},
+          {"id": "duplicate", "type": "example", "tax_treatment": "post_tax", "amount": "5.00"}
+        ]
+      }
+    },
+    {
+      "id": "invalid-pay-period",
+      "description": "Reject a pay period with its end date before its start date.",
+      "error": "INVALID_PERIOD",
+      "input": {
+        "pay_period": {"frequency": "monthly", "start": "2026-10-31", "end": "2026-10-01"},
+        "earnings": [{"id": "salary", "type": "salary", "amount": "100.00"}],
+        "deductions": []
+      }
+    },
+    {
+      "id": "incomplete-quantity-rate-pair",
+      "description": "Reject a quantity without its required unit rate.",
+      "error": "INVALID_QUANTITY",
+      "input": {
+        "pay_period": {"frequency": "weekly", "start": "2026-10-12", "end": "2026-10-18"},
+        "earnings": [{"id": "overtime", "type": "overtime", "quantity": "2.0"}],
+        "deductions": []
+      }
+    },
+    {
+      "id": "unsupported-deduction-tax-treatment",
+      "description": "Reject a deduction without an approved tax-treatment classification.",
+      "error": "INVALID_DEDUCTION",
+      "input": {
+        "pay_period": {"frequency": "monthly", "start": "2026-10-01", "end": "2026-10-31"},
+        "earnings": [{"id": "salary", "type": "salary", "amount": "100.00"}],
+        "deductions": [
+          {"id": "deduction", "type": "example", "tax_treatment": "unknown", "amount": "5.00"}
+        ]
+      }
+    }
+  ]
+}

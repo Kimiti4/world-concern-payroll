@@ -56,6 +56,9 @@ jobs:
           print("Generation handoff example conforms to the repository schema.")
           PY
 
+      - name: Run synthetic calculation-vector oracle tests
+        run: python -m unittest discover -s tests -v
+
       - name: Ensure no obvious conflict markers in tracked text
         run: |
           if git grep -n -E '^(<<<<<<< |=======|>>>>>>> )' -- '*.md' '*.json' '*.yml' '*.yaml'; then
