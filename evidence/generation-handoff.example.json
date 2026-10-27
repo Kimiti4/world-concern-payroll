@@ -23,7 +23,7 @@
     "files": [
       {
         "path": "REPLACE_WITH_GENERATED_FILE",
-        "sha256": "REPLACE_WITH_SHA256"
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
       }
     ],
     "dependency_lockfiles": []
@@ -37,7 +37,7 @@
         "status": "NOT_RUN",
         "evidence_uri": null,
         "limitations": [
-          "Template only; replace placeholders before use."
+          "Template only; replace every placeholder, including the all-zero SHA-256 sentinel, before use."
         ]
       }
     ],
