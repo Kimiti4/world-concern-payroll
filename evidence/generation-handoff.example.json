@@ -1,0 +1,47 @@
+{
+  "manifest_version": "1.0",
+  "project": {
+    "name": "world-concern-payroll",
+    "repository": "Kimiti4/world-concern-payroll",
+    "target_commit": null
+  },
+  "specification": {
+    "version": "draft-0.1",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "requirement_ids": [
+      "PAY-001"
+    ]
+  },
+  "generator": {
+    "repository": "Kimiti4/autonomous-API-Gen",
+    "commit": "REPLACE_WITH_EXACT_COMMIT",
+    "version": "REPLACE_WITH_EXACT_VERSION",
+    "backend": "REPLACE_WITH_BACKEND",
+    "compiler_versions": {}
+  },
+  "artifact": {
+    "files": [
+      {
+        "path": "REPLACE_WITH_GENERATED_FILE",
+        "sha256": "REPLACE_WITH_SHA256"
+      }
+    ],
+    "dependency_lockfiles": []
+  },
+  "verification": {
+    "status": "NOT_RUN",
+    "tests": [
+      {
+        "name": "Payroll repository independent verification",
+        "command": null,
+        "status": "NOT_RUN",
+        "evidence_uri": null,
+        "limitations": [
+          "Template only; replace placeholders before use."
+        ]
+      }
+    ],
+    "reviewer": null,
+    "reviewed_at": null
+  }
+}

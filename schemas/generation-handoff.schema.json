@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Payroll Generation Handoff Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "project",
+    "specification",
+    "generator",
+    "artifact",
+    "verification"
+  ],
+  "properties": {
+    "manifest_version": {
+      "const": "1.0"
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "name",
+        "repository"
+      ],
+      "properties": {
+        "name": {
+          "const": "world-concern-payroll"
+        },
+        "repository": {
+          "type": "string"
+        },
+        "target_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "specification": {
+      "type": "object",
+      "required": [
+        "version",
+        "sha256"
+      ],
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "requirement_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "generator": {
+      "type": "object",
+      "required": [
+        "repository",
+        "commit",
+        "version"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "backend": {
+          "type": "string"
+        },
+        "compiler_versions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "required": [
+        "files"
+      ],
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-fA-F0-9]{64}$"
+              }
+            }
+          }
+        },
+        "dependency_lockfiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": [
+        "status",
+        "tests"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "tests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "status"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "command": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "PASS",
+                  "FAIL",
+                  "NOT_RUN",
+                  "NOT_APPLICABLE"
+                ]
+              },
+              "evidence_uri": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "limitations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "reviewer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reviewed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
