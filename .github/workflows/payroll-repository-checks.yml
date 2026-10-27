@@ -1,0 +1,64 @@
+name: Payroll repository checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: payroll-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-scaffold:
+    name: Validate handoff contract and repository scaffold
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install schema validator
+        run: python -m pip install --disable-pip-version-check jsonschema
+
+      - name: Validate handoff JSON syntax
+        run: python -m json.tool evidence/generation-handoff.example.json > /dev/null
+
+      - name: Validate handoff example against schema
+        run: |
+          python - <<'PY'
+          import json
+          from jsonschema import Draft202012Validator
+
+          with open("schemas/generation-handoff.schema.json", encoding="utf-8") as f:
+              schema = json.load(f)
+          with open("evidence/generation-handoff.example.json", encoding="utf-8") as f:
+              example = json.load(f)
+
+          Draft202012Validator.check_schema(schema)
+          errors = sorted(
+              Draft202012Validator(schema).iter_errors(example),
+              key=lambda error: list(map(str, error.absolute_path)),
+          )
+          if errors:
+              for error in errors:
+                  path = "/".join(map(str, error.absolute_path)) or "<root>"
+                  print(f"{path}: {error.message}")
+              raise SystemExit(1)
+          print("Generation handoff example conforms to the repository schema.")
+          PY
+
+      - name: Ensure no obvious conflict markers in tracked text
+        run: |
+          if git grep -n -E '^(<<<<<<< |=======|>>>>>>> )' -- '*.md' '*.json' '*.yml' '*.yaml'; then
+            echo "Merge conflict markers found."
+            exit 1
+          fi
